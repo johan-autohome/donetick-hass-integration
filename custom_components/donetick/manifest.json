@@ -3,6 +3,7 @@
     "name": "Donetick",
     "version": "1.0.0",
     "documentation": "https://github.com/donetick/donetick-hass-integration",
+    "issue_tracker": "https://github.com/donetick/donetick-hass-integration/issues",
     "dependencies": [],
     "codeowners": ["@meauxt"],
     "requirements": ["aiohttp>=3.8.0"],
