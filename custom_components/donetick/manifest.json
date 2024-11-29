@@ -1,0 +1,13 @@
+{
+    "domain": "donetick",
+    "name": "Donetick",
+    "version": "1.0.0",
+    "documentation": "https://github.com/donetick/donetick-hass-integration",
+    "dependencies": [],
+    "codeowners": ["@meauxt"],
+    "requirements": ["aiohttp>=3.8.0"],
+    "iot_class": "cloud_polling",
+    "icon": "mdi:checkbox-multiple-marked-circle",
+    "config_flow": true
+    
+}

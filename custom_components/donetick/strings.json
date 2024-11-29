@@ -1,0 +1,30 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connect to Donetick",
+                "description": "Set up your Donetick integration",
+                "data": {
+                    "url": {
+                        "name":"Donetick URL",
+                        "default":"https://app.donetick.com"
+                    },
+                    "token":{
+                        "name": "API Token",
+                        "default":""
+                    },
+                    "show_due_in":{
+                        "name": "Days to display due tasks (default: 7, 0 to show all)",
+                        "default":7
+                    }
+                     }
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Failed to connect to Donetick",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error"
+        }
+    }
+}
