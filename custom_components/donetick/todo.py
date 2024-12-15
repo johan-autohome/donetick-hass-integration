@@ -71,26 +71,18 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
         return [  TodoItem(
             summary=task.name,
             uid=task.id,
-            status=self.get_status(task.next_due_date),
+            status=self.get_status(task.next_due_date, task.is_active),
             due=task.next_due_date,
             description=f"{self._config_entry.data[CONF_URL]}/chore/{task.id}"
         ) for task in self.coordinator.data if task.is_active ]
 
-    def get_status(self, due_date: datetime) -> TodoItemStatus:
+    def get_status(self, due_date: datetime, is_active: bool) -> TodoItemStatus:
         """Return the status of the task."""
+        if not is_active:
+            return TodoItemStatus.COMPLETED
+        return TodoItemStatus.NEEDS_ACTION 
 
         
-        if due_date is None:
-            return TodoItemStatus.NEEDS_ACTION
-        # Convert due_date to offset-naive if it is offset-aware
-        if due_date.tzinfo is not None:
-            due_date = due_date.replace(tzinfo=None)
-
-        # Compare with offset-naive current time
-        if due_date < datetime.now() + timedelta(days=self.hass.data[DOMAIN][self._config_entry.entry_id][CONF_SHOW_DUE_IN]):
-            return TodoItemStatus.NEEDS_ACTION
-        
-        return TodoItemStatus.DUE_LATER
     
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
