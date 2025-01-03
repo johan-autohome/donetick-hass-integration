@@ -28,7 +28,7 @@ class DonetickApiClient:
         
         try:
             async with self._session.get(
-                f"{self._base_url}/api/v1/chore",
+                f"{self._base_url}/eapi/v1/chore",
                 headers=headers,
                 timeout=API_TIMEOUT
             ) as response:
