@@ -19,6 +19,30 @@ class DonetickApiClient:
         self._token = token
         self._session = session
 
+    async def async_complete_task(self, choreId: int) -> DonetickTask:
+        """Get tasks from Donetick."""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with self._session.post(
+                f"{self._base_url}/eapi/v1/chore/{choreId}",
+                headers=headers,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                return DonetickTask.from_json(data)
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error fetching tasks from Donetick: %s", err)
+            raise
+        except (KeyError, ValueError, json.JSONDecodeError) as err:
+            _LOGGER.error("Error parsing Donetick response: %s", err)
+            return []
+
     async def async_get_tasks(self) -> List[DonetickTask]:
         """Get tasks from Donetick."""
         headers = {
@@ -38,9 +62,8 @@ class DonetickApiClient:
                 if not isinstance(data, list) :
                     _LOGGER.error("Unexpected response format from Donetick API")
                     return []
-                
-                return [DonetickTask.from_json(task) for task in data]
-                
+                return DonetickTask.from_json_list(data)
+
         except aiohttp.ClientError as err:
             _LOGGER.error("Error fetching tasks from Donetick: %s", err)
             raise

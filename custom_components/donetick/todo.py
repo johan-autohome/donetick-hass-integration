@@ -3,10 +3,12 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any
 
+import aiohttp
 from homeassistant.components.todo import (
     TodoItem,
     TodoItemStatus,
     TodoListEntity,
+    TodoListEntityFeature
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -54,7 +56,7 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
     _attr_supported_features = (
         # TodoListEntityFeature.CREATE_TODO_ITEM
         # | TodoListEntityFeature.DELETE_TODO_ITEM
-        # | TodoListEntityFeature.UPDATE_TODO_ITEM
+        TodoListEntityFeature.UPDATE_TODO_ITEM
     )
 
     def __init__(self, coordinator: DataUpdateCoordinator, config_entry: ConfigEntry) -> None:
@@ -73,7 +75,7 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
             uid=task.id,
             status=self.get_status(task.next_due_date, task.is_active),
             due=task.next_due_date,
-            description=f"{self._config_entry.data[CONF_URL]}/chore/{task.id}"
+            description=f"id={task.id}"
         ) for task in self.coordinator.data if task.is_active ]
 
     def get_status(self, due_date: datetime, is_active: bool) -> TodoItemStatus:
@@ -82,9 +84,6 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
             return TodoItemStatus.COMPLETED
         return TodoItemStatus.NEEDS_ACTION 
 
-        
-    
-
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Create a todo item."""
         # Implement API call to create item
@@ -92,7 +91,30 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a todo item."""
-        # Implement API call to update item
+        if not self.coordinator.data:
+            return None
+
+        if item.status == TodoItemStatus.COMPLETED:
+            try:
+                session = async_get_clientsession(self.hass)
+                client = DonetickApiClient(
+                    self._config_entry.data[CONF_URL],
+                    self._config_entry.data[CONF_TOKEN],
+                    session,
+                )
+                # Complete the task
+                await client.async_complete_task(item.uid)
+
+                return None
+            except aiohttp.ClientError:
+                err = "cannot_connect"
+                _LOGGER.error("Error completing task from Donetick: %s", err)
+            except Exception as e:  # pylint: disable=broad-except
+                _LOGGER.error("Error completing task from Donetick: %s", e)
+        else:
+            # Name and description update not yet supported
+            pass
+
         await self.coordinator.async_refresh()
 
     async def async_delete_todo_items(self, uids: list[str]) -> None:
