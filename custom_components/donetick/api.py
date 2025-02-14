@@ -47,3 +47,28 @@ class DonetickApiClient:
         except (KeyError, ValueError, json.JSONDecodeError) as err:
             _LOGGER.error("Error parsing Donetick response: %s", err)
             return []
+
+
+    async def async_complete_task(self, choreId: int) -> DonetickTask:
+        """Complete a task"""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with self._session.post(
+                f"{self._base_url}/eapi/v1/chore/{choreId}/complete",
+                headers=headers,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                return DonetickTask.from_json(data)
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error fetching tasks from Donetick: %s", err)
+            raise
+        except (KeyError, ValueError, json.JSONDecodeError) as err:
+            _LOGGER.error("Error parsing Donetick response: %s", err)
+            return []
