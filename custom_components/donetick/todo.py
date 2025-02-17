@@ -78,7 +78,7 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
             uid="%s--%s" % (task.id, task.next_due_date),
             status=self.get_status(task.next_due_date, task.is_active),
             due=task.next_due_date,
-            description=f"{self._config_entry.data[CONF_URL]}/chore/{task.id}"
+            description=f"{self._config_entry.data[CONF_URL]}/chores/{task.id}"
         ) for task in self.coordinator.data if task.is_active ]
 
     def get_status(self, due_date: datetime, is_active: bool) -> TodoItemStatus:
