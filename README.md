@@ -18,4 +18,4 @@ This integration connects Home Assistant to Donetick. and Add a Homeassistant To
 
 
 ### Configration: 
-The integration can be configure from Homeassistant Integrations. you need to provide donetick URL `https://app.donetick.com` if you are using the cloud version or you url for the selfhosted and make sure to append the port(default donetick is 2021) `http://you-ip-or-host:2021` 
+The integration can be configure from Homeassistant Integrations. you need to provide donetick URL `https://api.donetick.com` if you are using the cloud version or you url for the selfhosted and make sure to append the port(default donetick is 2021) `http://you-ip-or-host:2021` 
