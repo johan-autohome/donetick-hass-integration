@@ -8,7 +8,7 @@ from homeassistant.components.todo import (
     TodoItem,
     TodoItemStatus,
     TodoListEntity,
-    TodoListEntityFeature
+    TodoListEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -53,6 +53,7 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
     """Donetick Todo List entity."""
 
     _attr_supported_features = (
+        TodoListEntityFeature.UPDATE_TODO_ITEM
         # TodoListEntityFeature.CREATE_TODO_ITEM
         # | TodoListEntityFeature.DELETE_TODO_ITEM
         TodoListEntityFeature.UPDATE_TODO_ITEM
@@ -71,7 +72,10 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
             return []
         return [  TodoItem(
             summary=task.name,
-            uid=str(task.id),
+            # work around so homeassistant thinks the task is unique
+            # if the task is recurring, the id will be the same, so we add the next due date to the id
+            # this way, homeassistant will think it's a different task and have it unchecked
+            uid="%s--%s" % (task.id, task.next_due_date),
             status=self.get_status(task.next_due_date, task.is_active),
             due=task.next_due_date,
             description=f"{task.id} Frequency: {task.frequency} {task.frequency_type}\nLabels: {task.labels}"
@@ -90,10 +94,10 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a todo item."""
-        _LOGGER.warning("Update todo item: %s %s", item.uid, item.status)
+        _LOGGER.debug("Update todo item: %s %s", item.uid, item.status)
         if not self.coordinator.data:
             return None
-
+        _LOGGER.debug("Updating task %s, current status is %s", item.uid, item.status)
         if item.status == TodoItemStatus.COMPLETED:
             try:
                 session = async_get_clientsession(self.hass)
@@ -103,16 +107,17 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
                     session,
                 )
                 # Complete the task
-                await client.async_complete_task(item.uid)
-            except aiohttp.ClientError:
-                err = "cannot_connect"
-                _LOGGER.error("Error completing task from Donetick: %s", err)
-            except Exception as e:  # pylint: disable=broad-except
+                res = await client.async_complete_task(item.uid.split("--")[0])
+                if res.frequency_type!= "once":
+                    _LOGGER.debug("Task %s is recurring, updating next due date", res.name)
+                    item.status = TodoItemStatus.NEEDS_ACTION
+                    item.due = res.next_due_date
+                    self.async_update_todo_item(item)
+            except Exception as e:
                 _LOGGER.error("Error completing task from Donetick: %s", e)
         else:
-            # Name and description update not yet supported
             pass
-
+ 
         await self.coordinator.async_refresh()
 
     async def async_delete_todo_items(self, uids: list[str]) -> None:

@@ -20,7 +20,7 @@ class DonetickApiClient:
         self._session = session
 
     async def async_complete_task(self, choreId: int) -> DonetickTask:
-        """Get tasks from Donetick."""
+        """Complete tasks from Donetick."""
         headers = {
             "secretkey": f"{self._token}",
             "Content-Type": "application/json",
