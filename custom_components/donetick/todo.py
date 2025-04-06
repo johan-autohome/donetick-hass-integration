@@ -66,10 +66,10 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
         self._attr_unique_id = f"{config_entry.entry_id}"
 
     @property
-    def todo_items(self) -> list[TodoItem] | None: 
+    def todo_items(self) -> list[TodoItem]:
         """Return a list of todo items."""
         if self.coordinator.data is None:
-            return None
+            return []
         return [  TodoItem(
             summary=task.name,
             # work around so homeassistant thinks the task is unique
@@ -78,7 +78,7 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
             uid="%s--%s" % (task.id, task.next_due_date),
             status=self.get_status(task.next_due_date, task.is_active),
             due=task.next_due_date,
-            description=f"{self._config_entry.data[CONF_URL]}/chores/{task.id}"
+            description=f"{task.id} Frequency: {task.frequency} {task.frequency_type}\nLabels: {task.labels}"
         ) for task in self.coordinator.data if task.is_active ]
 
     def get_status(self, due_date: datetime, is_active: bool) -> TodoItemStatus:
@@ -86,9 +86,6 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
         if not is_active:
             return TodoItemStatus.COMPLETED
         return TodoItemStatus.NEEDS_ACTION 
-
-        
-    
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Create a todo item."""
@@ -132,17 +129,4 @@ class DonetickTodoListEntity(CoordinatorEntity, TodoListEntity):
 
     async def async_get_todo_items(self) -> list[TodoItem]:
         """Get all todo items."""
-        if not self.coordinator.data:
-            return []
-            
-        return [
-            TodoItem(
-            summary=task.name,
-            uid=str(task.id),
-            status=TodoItemStatus.COMPLETED if task.next_due_date is None else TodoItemStatus.NEEDS_ACTION,
-            due=task.next_due_date,
-            description=f"Frequency: {task.frequency} {task.frequency_type}\nLabels: {task.labels if task.labelsV2 else 'None'}"
-            )
-            for task in self.coordinator.data
-            if task.is_active
-        ]
+        return self.todo_items
