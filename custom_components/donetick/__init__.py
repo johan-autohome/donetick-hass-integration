@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 from .const import DOMAIN, CONF_URL, CONF_TOKEN, CONF_SHOW_DUE_IN
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = [Platform.TODO]
+PLATFORMS = [Platform.TODO, Platform.SENSOR, Platform.SWITCH, Platform.NUMBER, Platform.TEXT]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Donetick from a config entry."""
