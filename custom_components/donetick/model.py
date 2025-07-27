@@ -30,10 +30,17 @@ class DonetickTask:
     frequency_type: str
     frequency: int
     frequency_metadata: str
+    assigned_to: Optional[str] = None
     
     @classmethod
     def from_json(cls, data: dict) -> "DonetickTask":
         """Create a DonetickTask from JSON data."""
+        # Handle assignedTo field - could be in different formats
+        assigned_to = None
+        if data.get("assignedTo"):
+            if isinstance(data["assignedTo"], int):
+                assigned_to = data["assignedTo"]
+          
         return cls(
             id=data["id"],
             name=data["name"],
@@ -44,7 +51,8 @@ class DonetickTask:
             is_active=data["isActive"],
             frequency_type=data["frequencyType"],
             frequency=data["frequency"],
-            frequency_metadata=data["frequencyMetadata"]
+            frequency_metadata=data["frequencyMetadata"],
+            assigned_to=assigned_to
         )
     
     @classmethod

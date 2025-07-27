@@ -12,12 +12,25 @@
                     "token":{
                         "name": "API Token",
                         "default":""
-                    },
-                    "show_due_in":{
-                        "name": "Days to display due tasks (default: 7, 0 to show all)",
-                        "default":7
                     }
-                     }
+                }
+            },
+            "options": {
+                "title": "Organize Your Tasks",
+                "description": "Choose how you'd like to organize your Donetick tasks in Home Assistant",
+                "data": {
+                    "show_due_in": {
+                        "name": "Days ahead to show upcoming tasks",
+                        "description": "Show tasks due within this many days (0 shows all tasks)"
+                    },
+                    "create_unified_list": {
+                        "name": "Create \"All Tasks\" list",
+                        "description": "Show all household tasks in a single todo list"
+                    },
+                    "create_assignee_lists": {
+                        "name": "Create individual task lists per person",
+                        "description": "Create separate todo lists for each person assigned to tasks"
+                    }
                 }
             }
         },

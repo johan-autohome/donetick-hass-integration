@@ -139,7 +139,7 @@ class DonetickThingNumber(DonetickThingBase, NumberEntity):
         """Set the numeric value."""
         try:
             success = await self._client.async_set_thing_state(
-                self._thing.id, str(value)
+                self._thing.id, str(int(value))
             )
             if success:
                 self._thing.state = str(value)
