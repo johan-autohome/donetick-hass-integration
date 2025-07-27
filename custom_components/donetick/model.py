@@ -13,6 +13,45 @@ from homeassistant.components.todo import (
 _LOGGER = logging.getLogger(__name__)
 
 @dataclass
+class DonetickMember:
+    """Donetick circle member model."""
+    id: int
+    user_id: int
+    circle_id: int
+    role: str
+    is_active: bool
+    username: str
+    display_name: str
+    image: Optional[str] = None
+    points: int = 0
+    points_redeemed: int = 0
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    
+    @classmethod
+    def from_json(cls, data: dict) -> "DonetickMember":
+        """Create a DonetickMember from JSON data."""
+        return cls(
+            id=data["id"],
+            user_id=data["userId"],
+            circle_id=data["circleId"],
+            role=data["role"],
+            is_active=data["isActive"],
+            username=data["username"],
+            display_name=data["displayName"],
+            image=data.get("image"),
+            points=data.get("points", 0),
+            points_redeemed=data.get("pointsRedeemed", 0),
+            created_at=data.get("createdAt"),
+            updated_at=data.get("updatedAt")
+        )
+    
+    @classmethod
+    def from_json_list(cls, data: List[dict]) -> List["DonetickMember"]:
+        """Create a list of DonetickMembers from JSON data."""
+        return [cls.from_json(member) for member in data]
+
+@dataclass
 class DonetickAssignee:
     """Donetick assignee model."""
     user_id: int
@@ -30,7 +69,7 @@ class DonetickTask:
     frequency_type: str
     frequency: int
     frequency_metadata: str
-    assigned_to: Optional[str] = None
+    assigned_to: Optional[int] = None
     
     @classmethod
     def from_json(cls, data: dict) -> "DonetickTask":

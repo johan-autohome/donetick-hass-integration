@@ -1,15 +1,18 @@
 """Config flow for Donetick integration."""
 from typing import Any
+import logging
 import voluptuous as vol
 import aiohttp
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN, CONF_URL, CONF_TOKEN, CONF_SHOW_DUE_IN, CONF_CREATE_UNIFIED_LIST, CONF_CREATE_ASSIGNEE_LISTS
 from .api import DonetickApiClient
+
+_LOGGER = logging.getLogger(__name__)
 
 class DonetickConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Donetick."""
@@ -59,7 +62,6 @@ class DonetickConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         """Handle the options step."""
         if user_input is not None:
-            # Combine server data with options
             final_data = {
                 **self._server_data,
                 CONF_SHOW_DUE_IN: user_input.get(CONF_SHOW_DUE_IN, 7),
@@ -78,5 +80,52 @@ class DonetickConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_SHOW_DUE_IN, default=7): vol.Coerce(int),
                 vol.Optional(CONF_CREATE_UNIFIED_LIST, default=True): bool,
                 vol.Optional(CONF_CREATE_ASSIGNEE_LISTS, default=False): bool,
+            }),
+        )
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return DonetickOptionsFlowHandler(config_entry)
+
+class DonetickOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle Donetick options."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(
+                title="",
+                data={
+                    CONF_SHOW_DUE_IN: user_input.get(CONF_SHOW_DUE_IN, 7),
+                    CONF_CREATE_UNIFIED_LIST: user_input.get(CONF_CREATE_UNIFIED_LIST, True),
+                    CONF_CREATE_ASSIGNEE_LISTS: user_input.get(CONF_CREATE_ASSIGNEE_LISTS, False),
+                },
+            )
+
+        # No additional data needed for display
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Optional(
+                    CONF_SHOW_DUE_IN,
+                    default=self.config_entry.options.get(CONF_SHOW_DUE_IN, 7)
+                ): vol.Coerce(int),
+                vol.Optional(
+                    CONF_CREATE_UNIFIED_LIST,
+                    default=self.config_entry.options.get(CONF_CREATE_UNIFIED_LIST, True)
+                ): bool,
+                vol.Optional(
+                    CONF_CREATE_ASSIGNEE_LISTS,
+                    default=self.config_entry.options.get(CONF_CREATE_ASSIGNEE_LISTS, False)
+                ): bool,
             }),
         )

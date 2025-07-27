@@ -7,7 +7,7 @@ import aiohttp
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import API_TIMEOUT
-from .model import DonetickTask, DonetickThing
+from .model import DonetickTask, DonetickThing, DonetickMember
 _LOGGER = logging.getLogger(__name__)
 
 class DonetickApiClient:
@@ -46,6 +46,35 @@ class DonetickApiClient:
             raise
         except (KeyError, ValueError, json.JSONDecodeError) as err:
             _LOGGER.error("Error parsing Donetick response: %s", err)
+            return []
+
+    async def async_get_circle_members(self) -> List[DonetickMember]:
+        """Get circle members from Donetick."""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+        
+        try:
+            async with self._session.get(
+                f"{self._base_url}/eapi/v1/circle/members",
+                headers=headers,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                
+                if not isinstance(data, list):
+                    _LOGGER.error("Unexpected response format from Donetick circle members API")
+                    return []
+                
+                return [DonetickMember.from_json(member) for member in data]
+                
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error fetching circle members from Donetick: %s", err)
+            raise
+        except (KeyError, ValueError, json.JSONDecodeError) as err:
+            _LOGGER.error("Error parsing Donetick circle members response: %s", err)
             return []
 
     async def async_get_things(self) -> List[DonetickThing]:
@@ -159,17 +188,25 @@ class DonetickApiClient:
             return None
 
 
-    async def async_complete_task(self, choreId: int) -> DonetickTask:
+    async def async_complete_task(self, choreId: int, completed_by: int = None) -> DonetickTask:
         """Complete a task"""
         headers = {
             "secretkey": f"{self._token}",
             "Content-Type": "application/json",
         }
 
+        # Add completed_by parameter if provided
+        params = {}
+        if completed_by:
+            params["completedBy"] = completed_by
+            _LOGGER.debug("Adding completedBy parameter: %d", completed_by)
+        else:
+            _LOGGER.debug("No completedBy parameter - using default")
         try:
             async with self._session.post(
                 f"{self._base_url}/eapi/v1/chore/{choreId}/complete",
                 headers=headers,
+                params=params,
                 timeout=API_TIMEOUT
             ) as response:
                 response.raise_for_status()
@@ -181,4 +218,33 @@ class DonetickApiClient:
             raise
         except (KeyError, ValueError, json.JSONDecodeError) as err:
             _LOGGER.error("Error parsing Donetick response: %s", err)
+            return []
+
+    async def async_get_circle_members(self) -> List[DonetickMember]:
+        """Get circle members from Donetick."""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+        
+        try:
+            async with self._session.get(
+                f"{self._base_url}/eapi/v1/circle/members",
+                headers=headers,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                
+                if not isinstance(data, list):
+                    _LOGGER.error("Unexpected response format from Donetick circle members API")
+                    return []
+                
+                return [DonetickMember.from_json(member) for member in data]
+                
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error fetching circle members from Donetick: %s", err)
+            raise
+        except (KeyError, ValueError, json.JSONDecodeError) as err:
+            _LOGGER.error("Error parsing Donetick circle members response: %s", err)
             return []

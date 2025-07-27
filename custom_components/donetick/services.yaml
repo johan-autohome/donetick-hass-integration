@@ -1,0 +1,26 @@
+complete_task:
+  name: Complete Task
+  description: Complete a Donetick task with optional user attribution
+  fields:
+    task_id:
+      name: Task ID
+      description: The ID of the task to complete
+      required: true
+      selector:
+        number:
+          min: 1
+          mode: box
+    completed_by:
+      name: Completed By User ID
+      description: The Donetick user ID who completed the task (optional)
+      required: false
+      selector:
+        number:
+          min: 1
+          mode: box
+    config_entry_id:
+      name: Config Entry ID
+      description: The specific Donetick integration to use (optional, uses first if not specified)
+      required: false
+      selector:
+        text:

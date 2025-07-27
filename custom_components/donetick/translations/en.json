@@ -15,10 +15,25 @@
                 "data": {
                     "show_due_in": "Days ahead to show upcoming tasks",
                     "create_unified_list": "Create \"All Tasks\" list",
-                    "create_assignee_lists": "Create individual task lists per person"
+                    "create_assignee_lists": "Create individual task lists per person",
                 }
             }
-        },
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Configure Donetick Options",
+                "description": "Adjust your Donetick integration settings",
+                "data": {
+                    "show_due_in": "Days ahead to show upcoming tasks",
+                    "create_unified_list": "Create \"All Tasks\" list",
+                    "create_assignee_lists": "Create individual task lists per person",
+                }
+            }
+        }
+    },
+    "config": {
         "error": {
             "cannot_connect": "Failed to connect to Donetick",
             "invalid_auth": "Invalid authentication",
