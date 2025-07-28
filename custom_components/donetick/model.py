@@ -70,6 +70,7 @@ class DonetickTask:
     frequency: int
     frequency_metadata: str
     assigned_to: Optional[int] = None
+    description: Optional[str] = None
     
     @classmethod
     def from_json(cls, data: dict) -> "DonetickTask":
@@ -91,7 +92,8 @@ class DonetickTask:
             frequency_type=data["frequencyType"],
             frequency=data["frequency"],
             frequency_metadata=data["frequencyMetadata"],
-            assigned_to=assigned_to
+            assigned_to=assigned_to,
+            description=data.get("description")
         )
     
     @classmethod

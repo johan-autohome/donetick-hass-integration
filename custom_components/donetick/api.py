@@ -187,7 +187,6 @@ class DonetickApiClient:
             _LOGGER.error("Error parsing Donetick change state response: %s", err)
             return None
 
-
     async def async_complete_task(self, choreId: int, completed_by: int = None) -> DonetickTask:
         """Complete a task"""
         headers = {
@@ -202,6 +201,7 @@ class DonetickApiClient:
             _LOGGER.debug("Adding completedBy parameter: %d", completed_by)
         else:
             _LOGGER.debug("No completedBy parameter - using default")
+
         try:
             async with self._session.post(
                 f"{self._base_url}/eapi/v1/chore/{choreId}/complete",
@@ -214,37 +214,100 @@ class DonetickApiClient:
                 return DonetickTask.from_json(data)
 
         except aiohttp.ClientError as err:
-            _LOGGER.error("Error fetching tasks from Donetick: %s", err)
+            _LOGGER.error("Error completing task in Donetick: %s", err)
             raise
         except (KeyError, ValueError, json.JSONDecodeError) as err:
-            _LOGGER.error("Error parsing Donetick response: %s", err)
-            return []
+            _LOGGER.error("Error parsing Donetick complete task response: %s", err)
+            raise
 
-    async def async_get_circle_members(self) -> List[DonetickMember]:
-        """Get circle members from Donetick."""
+    async def async_create_task(self, name: str, description: str = None, due_date: str = None, created_by: int = None) -> DonetickTask:
+        """Create a new task"""
         headers = {
             "secretkey": f"{self._token}",
             "Content-Type": "application/json",
         }
-        
+
+        payload = {"name": name}
+        if description:
+            payload["description"] = description
+        if due_date:
+            payload["dueDate"] = due_date
+        if created_by:
+            payload["createdBy"] = created_by
+
         try:
-            async with self._session.get(
-                f"{self._base_url}/eapi/v1/circle/members",
+            async with self._session.post(
+                f"{self._base_url}/eapi/v1/chore",
                 headers=headers,
+                json=payload,
                 timeout=API_TIMEOUT
             ) as response:
                 response.raise_for_status()
                 data = await response.json()
-                
-                if not isinstance(data, list):
-                    _LOGGER.error("Unexpected response format from Donetick circle members API")
-                    return []
-                
-                return [DonetickMember.from_json(member) for member in data]
-                
+                return DonetickTask.from_json(data)
+
         except aiohttp.ClientError as err:
-            _LOGGER.error("Error fetching circle members from Donetick: %s", err)
+            _LOGGER.error("Error creating task in Donetick: %s", err)
             raise
         except (KeyError, ValueError, json.JSONDecodeError) as err:
-            _LOGGER.error("Error parsing Donetick circle members response: %s", err)
-            return []
+            _LOGGER.error("Error parsing Donetick create task response: %s", err)
+            raise
+
+    async def async_update_task(self, task_id: int, name: str = None, description: str = None, due_date: str = None) -> DonetickTask:
+        """Update an existing task"""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {}
+        if name:
+            payload["name"] = name
+        if description is not None:  # Allow empty string to clear description
+            payload["description"] = description
+        if due_date:
+            payload["dueDate"] = due_date
+
+        if not payload:
+            raise ValueError("At least one field must be provided for update")
+
+        try:
+            async with self._session.put(
+                f"{self._base_url}/eapi/v1/chore/{task_id}",
+                headers=headers,
+                json=payload,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                data = await response.json()
+                return DonetickTask.from_json(data)
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error updating task in Donetick: %s", err)
+            raise
+        except (KeyError, ValueError, json.JSONDecodeError) as err:
+            _LOGGER.error("Error parsing Donetick update task response: %s", err)
+            raise
+
+    async def async_delete_task(self, task_id: int) -> bool:
+        """Delete a task"""
+        headers = {
+            "secretkey": f"{self._token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            async with self._session.delete(
+                f"{self._base_url}/eapi/v1/chore/{task_id}",
+                headers=headers,
+                timeout=API_TIMEOUT
+            ) as response:
+                response.raise_for_status()
+                return True
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error deleting task in Donetick: %s", err)
+            raise
+        except Exception as err:
+            _LOGGER.error("Error deleting task: %s", err)
+            return False

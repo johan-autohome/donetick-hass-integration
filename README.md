@@ -1,21 +1,50 @@
-# Donetick Homeassistant Integration
+# Donetick Home Assistant Integration
 
-This integration connects Home Assistant to Donetick. and Add a Homeassistant Todo so user can view the current tasks in homeasssitant and mark them as complete!
+A Home Assistant integration for Donetick that provides support for managing todo lists and controlling "things" as Home Assistant entities.
 
-> [!NOTE]  
-> When a task is marked as completed, it's assumed that the user who generated the API token used in the integration is the one who completed it.  This integration doesn't currently track different Home Assistant users completing tasks. this will work only from Version 0.1.35 and above 
+## Features
 
-
-### Installation
-#### Via HACS
-- Open HACS in Home Assistant.
-- Navigate to Integrations.
-- Click on the 3 dots then `Custom repositories`:
-    - for Repository use the link of this repo `https://github.com/donetick/donetick-hass-integration/`
-    - Type is Integration
-- Search for Donetick and click Download.
-- Restart Home Assistant.
+### 📋 Todo Lists
+- **Multiple Todo Lists**: "All Tasks" view and individual assignee-specific lists
+- **Task Management**: Create, update, delete, and complete tasks
+- **Some Donetick Task attributes**: Task descriptions, due dates can be managed in Home Assistant
 
 
-### Configration: 
-The integration can be configure from Homeassistant Integrations. you need to provide donetick URL `https://api.donetick.com` if you are using the cloud version or you url for the selfhosted and make sure to append the port(default donetick is 2021) `http://you-ip-or-host:2021` 
+### 🔧 Things Integration  
+- **Sync things**: Control Donetick "things" as Home Assistant entities
+- **Multiple Entity Types**: 
+  - **Switch**: Boolean things (true/false)
+  - **Number**: Numeric things with increment/decrement
+  - **Text**: Text input things
+
+### 🔧 Services
+- `donetick.create_task` - Create new tasks
+- `donetick.update_task` - Update existing tasks  
+- `donetick.delete_task` - Delete tasks
+- `donetick.complete_task` - Mark tasks complete with user attribution
+
+## Installation
+
+### Via HACS
+1. Open HACS in Home Assistant
+2. Navigate to Integrations  
+3. Click "⋮" → "Custom repositories"
+4. Add repository: `https://github.com/donetick/donetick-hass-integration/`
+5. Category: Integration
+6. Search for "Donetick" and install
+7. Restart Home Assistant
+
+## Configuration
+
+Configure via **Settings** → **Devices & Services** → **Add Integration** → **Donetick**
+
+**Required:**
+- **Server URL**: 
+  - Cloud: `https://api.donetick.com`
+  - Self-hosted: `http://your-host:2021` (or your port)
+- **API Token**: Generate from Donetick user settings
+
+**Optional:**
+- **Show Due In**: Days ahead to display upcoming tasks (default: 7)
+- **Create Unified List**: Enable "All Tasks" todo list (default: true)  
+- **Create Assignee Lists**: Individual todo lists per user (default: false) 
