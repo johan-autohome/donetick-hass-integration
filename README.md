@@ -5,7 +5,8 @@
 
 A Home Assistant integration for Donetick that provides support for managing todo lists and controlling "things" as Home Assistant entities.
 
-> **Note:** This version of the integration requires Donetick server version **0.1.53** or greater.
+> [!WARNING]  
+> This version of the integration requires Donetick server version **0.1.53** or greater.
 
 ## Features
 
