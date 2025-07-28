@@ -7,7 +7,7 @@ A Home Assistant integration for Donetick that provides support for managing tod
 ### 📋 Todo Lists
 - **Multiple Todo Lists**: "All Tasks" view and individual assignee-specific lists
 - **Task Management**: Create, update, delete, and complete tasks
-- **Some Donetick Task attributes**: Task descriptions, due dates can be managed in Home Assistant
+- **Task attributes**: Task descriptions, due dates can be managed in Home Assistant
 
 
 ### 🔧 Things Integration  
